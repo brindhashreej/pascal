@@ -1,0 +1,63 @@
+import java.util.*;
+class pascal {
+
+    public static void main(String[] args) {
+        Scanner s=new Scanner(System.in);
+        int n = s.nextInt();
+        PascalTrianglePrinter printer = new PascalTrianglePrinter(n);
+        Thread[] threads = new Thread[n];
+        for (int i = 0; i < n; i++) {
+            threads[i] = new Thread(new RowPrinter(printer, i));
+            threads[i].start();
+        }
+        try {
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    static class PascalTrianglePrinter {
+        private final int[][] triangle;
+        public PascalTrianglePrinter(int n) {
+            triangle = new int[n][];
+            for (int i = 0; i < n; i++) {
+                triangle[i] = new int[i + 1];
+            }
+        }
+        public synchronized void printRow(int row) {
+            int[] rowData = triangle[row];
+            calculateRow(rowData);
+            for (int i = 0; i < rowData.length; i++) {
+                System.out.print(rowData[i] + " ");
+            }
+            System.out.println();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        private void calculateRow(int[] row) {
+            row[0] = 1;
+            row[row.length - 1] = 1;
+            for (int i = 1; i < row.length - 1; i++) {
+                row[i] = triangle[row.length - 2][i - 1] + triangle[row.length - 2][i];
+            }
+        }
+    }
+    static class RowPrinter implements Runnable {
+        private final PascalTrianglePrinter printer;
+        private final int row;
+
+        public RowPrinter(PascalTrianglePrinter printer, int row) {
+            this.printer = printer;
+            this.row = row;
+        }
+        @Override
+        public void run() {
+            printer.printRow(row);
+        }
+    }
+}
